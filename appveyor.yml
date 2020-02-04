@@ -24,5 +24,6 @@ build: false
 
 test_script:
   - SET RUSTFLAGS=-Dwarnings
+  - SET RUST_BACKTRACE=1
   - cargo build --target %TARGET%
   - cargo test --all --target %TARGET%
