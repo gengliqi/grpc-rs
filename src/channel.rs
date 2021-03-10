@@ -445,6 +445,17 @@ impl ChannelBuilder {
         unsafe { Channel::new(self.env.pick_cq(), self.env, channel) }
     }
 
+    /// Build an insecure [`Channel`] that connects to a specific address.
+    pub fn connect_with_id(mut self, addr: &str, id: usize) -> Channel {
+        let args = self.prepare_connect_args();
+        let addr = CString::new(addr).unwrap();
+        let addr_ptr = addr.as_ptr();
+        let channel =
+            unsafe { grpc_sys::grpc_insecure_channel_create(addr_ptr, args.args, ptr::null_mut()) };
+
+        unsafe { Channel::new(self.env.pick_cq_with_id(id), self.env, channel) }
+    }
+
     /// Build an insecure [`Channel`] taking over an established connection from
     /// a file descriptor. The target string given is purely informative to
     /// describe the endpoint of the connection. Takes ownership of the given
@@ -512,6 +523,23 @@ mod secure_channel {
             };
 
             unsafe { Channel::new(self.env.pick_cq(), self.env, channel) }
+        }
+
+        /// Build a secure [`Channel`] that connects to a specific address.
+        pub fn secure_connect_with_id(mut self, addr: &str, mut creds: ChannelCredentials, id: usize) -> Channel {
+            let args = self.prepare_connect_args();
+            let addr = CString::new(addr).unwrap();
+            let addr_ptr = addr.as_ptr();
+            let channel = unsafe {
+                grpc_sys::grpc_secure_channel_create(
+                    creds.as_mut_ptr(),
+                    addr_ptr,
+                    args.args,
+                    ptr::null_mut(),
+                )
+            };
+
+            unsafe { Channel::new(self.env.pick_cq_with_id(id), self.env, channel) }
         }
     }
 }

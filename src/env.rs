@@ -157,6 +157,10 @@ impl Environment {
         let idx = self.idx.fetch_add(1, Ordering::Relaxed);
         self.cqs[idx % self.cqs.len()].clone()
     }
+
+    pub fn pick_cq_with_id(&self, id: usize) -> CompletionQueue {
+        self.cqs[id % self.cqs.len()].clone()
+    }
 }
 
 impl Drop for Environment {
